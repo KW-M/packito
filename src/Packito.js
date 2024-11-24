@@ -12,10 +12,11 @@ import spawn from './utils/spawn';
 const fsp = fs.promises;
 
 export default class Packito {
-  constructor(outputDir, noPublish, publisherArguments) {
+  constructor(outputDir, noPublish, publisherArguments, cliOutput) {
     this.outputDir = outputDir;
     this.noPublish = noPublish;
     this.publisherArguments = publisherArguments;
+    this.cliOutput = cliOutput;
   }
 
   async readJSONFile(fileName, dir = './') {
@@ -83,11 +84,20 @@ export default class Packito {
 
   async copyRecursive(file, outputDir) {
     try {
-      await fsp.copyFile(file, path.join(outputDir, path.basename(file)));
+      if (fsp.cp) {
+        await fsp.cp(file, path.join(outputDir, path.basename(file)), { recursive: true, dereference: true });
+      } else {
+        // maintain backwards compatibility with node 10
+        await fsp.copyFile(file, path.join(outputDir, path.basename(file)));
+      }
     } catch (error) {
       if (error.code === 'EISDIR') {
         const files = await fsp.readdir(file);
         await Promise.all(files.map((f) => this.copyRecursive(path.join(file, f), path.join(outputDir, file))));
+      } else if (this.cliOutput) {
+        this.cliOutput.error(
+          `Could not copy ${file} to ${path.join(outputDir, path.basename(file))}, ${error.toString()}`,
+        );
       }
     }
   }

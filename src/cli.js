@@ -80,7 +80,7 @@ class PackitoCli {
       this.help();
     } else {
       // WIP execute
-      const packito = new Packito(args.dist, args.n, args._);
+      const packito = new Packito(args.dist, args.n, args._, this.output);
       await packito.transform();
       await packito.write();
       // this.log('args=', args);

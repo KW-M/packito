@@ -39,7 +39,7 @@ describe('Cli', () => {
     expect(pcli).to.be.an('object');
     const { version } = getPackage('packito');
     expect(stack[0].indexOf(`Packito cleans package before publishing v${version}`) > -1).to.equal(true);
-    expect(stack.length).to.equal(21);
+    expect(stack.length).to.equal(23);
   });
   it('error', async () => {
     stack = [];
